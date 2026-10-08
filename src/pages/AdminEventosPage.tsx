@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import {
   Alert, Box, Button, Card, CardContent, Chip, CircularProgress,
-  Container, IconButton, MenuItem, Stack, TextField, Typography,
+  Container, Dialog, DialogActions, DialogContent, DialogTitle, IconButton,
+  MenuItem, Stack, TextField, Typography,
 } from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
@@ -28,6 +30,7 @@ export const AdminEventosPage: React.FC = () => {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [formOpen, setFormOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -70,6 +73,7 @@ export const AdminEventosPage: React.FC = () => {
   };
 
   const edit = (evento: Evento) => {
+    setFormOpen(true);
     setEditingId(evento.id);
     setForm({
       titulo: evento.titulo, descripcion: evento.descripcion || '', imagenUrl: evento.imagenUrl || '',
@@ -84,6 +88,7 @@ export const AdminEventosPage: React.FC = () => {
   };
 
   const reset = () => {
+    setFormOpen(false);
     setEditingId(null);
     setImageFile(null);
     setForm({ ...emptyForm, tiposEntrada: [{ ...emptyTipo }] });
@@ -124,12 +129,26 @@ export const AdminEventosPage: React.FC = () => {
 
   return (
     <Container maxWidth="lg" sx={{ py: 5 }}>
-      <Typography variant="h4" sx={{ fontWeight: 800, mb: 3 }}>Gestión de eventos</Typography>
+      <Stack direction="row" sx={{ mb: 3, justifyContent: 'space-between', alignItems: 'center' }}>
+        <Typography variant="h4" sx={{ fontWeight: 800 }}>Gestión de eventos</Typography>
+        <Button variant="contained" startIcon={<AddIcon />} onClick={() => {
+          reset();
+          setFormOpen(true);
+          setError(null);
+          setMessage(null);
+        }}>
+          Nuevo evento
+        </Button>
+      </Stack>
       {message && <Alert severity="success" onClose={() => setMessage(null)} sx={{ mb: 2 }}>{message}</Alert>}
       {error && <Alert severity="error" onClose={() => setError(null)} sx={{ mb: 2 }}>{error}</Alert>}
-      <Card sx={{ mb: 4 }}>
-        <CardContent component="form" onSubmit={save}>
-          <Typography variant="h6" sx={{ mb: 2 }}>{editingId ? 'Editar evento' : 'Nuevo evento'}</Typography>
+      <Dialog open={formOpen} onClose={() => { if (!saving) reset(); }} fullWidth maxWidth="lg" scroll="paper">
+        <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          {editingId ? 'Editar evento' : 'Nuevo evento'}
+          <IconButton aria-label="Cerrar" onClick={reset} disabled={saving}><CloseIcon /></IconButton>
+        </DialogTitle>
+        <Box component="form" onSubmit={save}>
+          <DialogContent dividers>
           <Stack spacing={2}>
             <TextField required label="Título" value={form.titulo} onChange={(e) => updateField('titulo', e.target.value)} />
             <TextField multiline minRows={2} label="Descripción" value={form.descripcion || ''} onChange={(e) => updateField('descripcion', e.target.value)} />
@@ -170,13 +189,16 @@ export const AdminEventosPage: React.FC = () => {
               </Stack>
             ))}
             <Box><Button startIcon={<AddIcon />} onClick={() => setForm((current) => ({ ...current, tiposEntrada: [...current.tiposEntrada, { ...emptyTipo }] }))}>Agregar tipo</Button></Box>
-            <Stack direction="row" spacing={1}>
-              <Button type="submit" variant="contained" disabled={saving}>{saving ? 'Guardando...' : editingId ? 'Guardar cambios' : 'Crear evento'}</Button>
-              {editingId && <Button onClick={reset}>Cancelar edición</Button>}
-            </Stack>
           </Stack>
-        </CardContent>
-      </Card>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={reset} disabled={saving}>Cancelar</Button>
+            <Button type="submit" variant="contained" disabled={saving}>
+              {saving ? 'Guardando...' : editingId ? 'Guardar cambios' : 'Crear evento'}
+            </Button>
+          </DialogActions>
+        </Box>
+      </Dialog>
       <Stack spacing={2}>
         {eventos.map((evento) => (
           <Card key={evento.id}><CardContent sx={{ display: 'flex', justifyContent: 'space-between', gap: 2, alignItems: 'center' }}>
