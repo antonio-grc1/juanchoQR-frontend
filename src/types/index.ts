@@ -24,6 +24,7 @@ export interface Evento {
   titulo: string;
   descripcion?: string | null;
   imagenUrl?: string | null;
+  imagenPublicId?: string | null;
   fechaInicio: string;
   fechaFin?: string | null;
   ubicacion?: string | null;
@@ -64,4 +65,3 @@ export interface Ticket {
     evento: Evento;
   };
 }
-

@@ -73,6 +73,7 @@ export const AdminEventosPage: React.FC = () => {
     setEditingId(evento.id);
     setForm({
       titulo: evento.titulo, descripcion: evento.descripcion || '', imagenUrl: evento.imagenUrl || '',
+      imagenPublicId: evento.imagenPublicId || '',
       fechaInicio: toInputDate(evento.fechaInicio), fechaFin: toInputDate(evento.fechaFin),
       ubicacion: evento.ubicacion || '', estado: evento.estado,
       tiposEntrada: evento.tiposEntrada.map(({ id, nombre, precio, stockTotal, maxPorCompra }) =>
@@ -96,12 +97,14 @@ export const AdminEventosPage: React.FC = () => {
         setError('Debe subir una foto para crear el evento.');
         return;
       }
-      const imageUrl = imageFile ? await eventosApi.uploadImage(imageFile) : form.imagenUrl;
-      if (!imageUrl) {
+      const uploadedImage = imageFile ? await eventosApi.uploadImage(imageFile) : null;
+      const imageUrl = uploadedImage?.imagenUrl || form.imagenUrl;
+      const imagePublicId = uploadedImage?.imagenPublicId || form.imagenPublicId;
+      if (!imageUrl || !imagePublicId) {
         setError('Debe subir una foto para crear el evento.');
         return;
       }
-      const payload = { ...form, imagenUrl: imageUrl };
+      const payload = { ...form, imagenUrl: imageUrl, imagenPublicId: imagePublicId };
       if (editingId) await eventosApi.update(editingId, payload);
       else await eventosApi.create(payload);
       setMessage(editingId ? 'Evento actualizado correctamente.' : 'Evento creado correctamente.');
