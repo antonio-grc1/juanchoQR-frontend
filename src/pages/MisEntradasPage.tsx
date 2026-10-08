@@ -33,6 +33,7 @@ export const MisEntradasPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
 
   const [ticketSeleccionado, setTicketSeleccionado] = useState<Ticket | null>(null);
+  const [mensajeAceptacion, setMensajeAceptacion] = useState<string | null>(null);
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -57,6 +58,43 @@ export const MisEntradasPage: React.FC = () => {
     fetchTickets();
   }, [isAuthenticated, navigate]);
 
+  useEffect(() => {
+    if (!ticketSeleccionado || ticketSeleccionado.estado !== 'ACTIVO') return;
+
+    let cancelled = false;
+    const checkTicketStatus = async () => {
+      try {
+        const updatedTickets = await ticketsApi.getMisTickets();
+        if (cancelled) return;
+
+        const updatedTicket = updatedTickets.find(({ id }) => id === ticketSeleccionado.id);
+        if (updatedTicket?.estado === 'UTILIZADO') {
+          setTickets(updatedTickets);
+          setTicketSeleccionado(null);
+          setMensajeAceptacion('Entrada aceptada. ¡Disfrutá el evento!');
+        }
+      } catch (pollError) {
+        console.error('No se pudo actualizar el estado de la entrada:', pollError);
+      }
+    };
+
+    const intervalId = window.setInterval(() => {
+      void checkTicketStatus();
+    }, 2000);
+
+    return () => {
+      cancelled = true;
+      window.clearInterval(intervalId);
+    };
+  }, [ticketSeleccionado]);
+
+  useEffect(() => {
+    if (!mensajeAceptacion) return;
+
+    const timeoutId = window.setTimeout(() => setMensajeAceptacion(null), 6000);
+    return () => window.clearTimeout(timeoutId);
+  }, [mensajeAceptacion]);
+
   return (
     <Container maxWidth="lg" sx={{ py: 5 }}>
       {/* Header */}
@@ -71,6 +109,12 @@ export const MisEntradasPage: React.FC = () => {
           Tus códigos QR de acceso para los eventos que compraste. Mostralos directamente en la entrada.
         </Typography>
       </Box>
+
+      {mensajeAceptacion && (
+        <Alert severity="success" onClose={() => setMensajeAceptacion(null)} sx={{ mb: 4, borderRadius: 2 }}>
+          {mensajeAceptacion}
+        </Alert>
+      )}
 
       {/* Error */}
       {error && (
@@ -243,4 +287,3 @@ export const MisEntradasPage: React.FC = () => {
     </Container>
   );
 };
-
