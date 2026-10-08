@@ -73,24 +73,39 @@ export const ValidadorPage: React.FC = () => {
   };
 
   useEffect(() => {
-    const scanner = new Html5Qrcode('qr-reader');
-    scannerRef.current = scanner;
+    let cancelled = false;
+    let scanner: Html5Qrcode | null = null;
+    const initializationId = window.setTimeout(() => {
+      if (cancelled) return;
 
-    scanner
-      .start(
-        { facingMode: 'environment' },
-        { fps: 10, qrbox: { width: 250, height: 250 } },
-        (decodedText) => void validateToken(decodedText),
-        () => undefined
-      )
-      .catch(() => setCameraError('No se pudo acceder a la cámara. Podés ingresar el código manualmente.'));
+      scanner = new Html5Qrcode('qr-reader');
+      scannerRef.current = scanner;
+      void scanner
+        .start(
+          { facingMode: 'environment' },
+          { fps: 10, qrbox: { width: 250, height: 250 } },
+          (decodedText) => void validateToken(decodedText),
+          () => undefined
+        )
+        .catch(() => {
+          if (!cancelled) {
+            setCameraError('No se pudo acceder a la cámara. Podés ingresar el código manualmente.');
+          }
+        });
+    }, 0);
 
     return () => {
-      if (scanner.isScanning) {
-        void scanner.stop().catch(() => undefined);
+      cancelled = true;
+      window.clearTimeout(initializationId);
+
+      if (scanner?.isScanning) {
+        void scanner.stop()
+          .then(() => scanner?.clear())
+          .catch(() => undefined);
+      } else {
+        scanner?.clear();
       }
-      scanner.clear();
-      scannerRef.current = null;
+      if (scannerRef.current === scanner) scannerRef.current = null;
     };
   }, []);
 
