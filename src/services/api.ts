@@ -1,5 +1,5 @@
 import axios from 'axios';
-import type { Evento, AuthResponse, Ticket } from '../types';
+import type { Evento, EventoPayload, AuthResponse, Ticket } from '../types';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
 
@@ -68,6 +68,25 @@ export const eventosApi = {
   getById: async (id: string): Promise<Evento> => {
     const res = await api.get<{ evento: Evento }>(`/eventos/${id}`);
     return res.data.evento;
+  },
+
+  getAdminAll: async (): Promise<Evento[]> => {
+    const res = await api.get<{ eventos: Evento[] }>('/eventos/admin/all');
+    return res.data.eventos;
+  },
+
+  create: async (evento: EventoPayload): Promise<Evento> => {
+    const res = await api.post<{ evento: Evento }>('/eventos', evento);
+    return res.data.evento;
+  },
+
+  update: async (id: string, evento: Partial<EventoPayload>): Promise<Evento> => {
+    const res = await api.put<{ evento: Evento }>(`/eventos/${id}`, evento);
+    return res.data.evento;
+  },
+
+  cancel: async (id: string): Promise<void> => {
+    await api.delete(`/eventos/${id}`);
   },
 };
 
@@ -139,5 +158,3 @@ export const ticketsApi = {
     return res.data;
   },
 };
-
-

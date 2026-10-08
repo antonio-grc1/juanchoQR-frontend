@@ -31,6 +31,19 @@ export interface Evento {
   tiposEntrada: TipoEntrada[];
 }
 
+export interface TipoEntradaPayload {
+  id?: string;
+  nombre: string;
+  precio: number;
+  stockTotal: number;
+  maxPorCompra: number;
+}
+
+export type EventoPayload = Omit<Evento, 'id' | 'tiposEntrada' | 'estado'> & {
+  estado?: EstadoEvento;
+  tiposEntrada: TipoEntradaPayload[];
+};
+
 export interface AuthResponse {
   accessToken: string;
   refreshToken: string;
@@ -51,5 +64,4 @@ export interface Ticket {
     evento: Evento;
   };
 }
-
 

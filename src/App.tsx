@@ -10,6 +10,7 @@ import { PagoSimuladorPage } from './pages/PagoSimuladorPage';
 import { PagoResultadoPage } from './pages/PagoResultadoPage';
 import { MisEntradasPage } from './pages/MisEntradasPage';
 import { ValidadorPage } from './pages/ValidadorPage';
+import { AdminEventosPage } from './pages/AdminEventosPage';
 import { useAuth } from './context/AuthContext';
 
 const theme = createTheme({
@@ -40,6 +41,12 @@ function ProtectedValidatorRoute() {
   return isAuthenticated && isValidador ? <ValidadorPage /> : <Navigate to="/admin/login" replace />;
 }
 
+function ProtectedAdminRoute() {
+  const { authReady, isAuthenticated, isAdmin } = useAuth();
+  if (!authReady) return null;
+  return isAuthenticated && isAdmin ? <AdminEventosPage /> : <Navigate to="/admin/login" replace />;
+}
+
 function App() {
   return (
     <ThemeProvider theme={theme}>
@@ -63,6 +70,7 @@ function App() {
 
                 {/* Billetera de Entradas con QR */}
                 <Route path="/mis-entradas" element={<MisEntradasPage />} />
+                <Route path="/admin" element={<ProtectedAdminRoute />} />
                 <Route
                   path="/validar-entradas"
                   element={<ProtectedValidatorRoute />}
