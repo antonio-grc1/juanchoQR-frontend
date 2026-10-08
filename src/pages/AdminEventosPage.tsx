@@ -25,6 +25,8 @@ export const AdminEventosPage: React.FC = () => {
   const navigate = useNavigate();
   const [eventos, setEventos] = useState<Evento[]>([]);
   const [form, setForm] = useState<EventoPayload>(emptyForm);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -42,6 +44,16 @@ export const AdminEventosPage: React.FC = () => {
     if (!isAdmin) { navigate('/admin/login', { replace: true }); return; }
     void load();
   }, [authReady, isAdmin, navigate]);
+
+  useEffect(() => {
+    if (!imageFile) {
+      setImagePreview(null);
+      return;
+    }
+    const previewUrl = URL.createObjectURL(imageFile);
+    setImagePreview(previewUrl);
+    return () => URL.revokeObjectURL(previewUrl);
+  }, [imageFile]);
 
   const updateField = (field: keyof EventoPayload, value: string) =>
     setForm((current) => ({ ...current, [field]: value }));
@@ -66,17 +78,32 @@ export const AdminEventosPage: React.FC = () => {
       tiposEntrada: evento.tiposEntrada.map(({ id, nombre, precio, stockTotal, maxPorCompra }) =>
         ({ id, nombre, precio: Number(precio), stockTotal, maxPorCompra })),
     });
+    setImageFile(null);
     setMessage(null); setError(null);
   };
 
-  const reset = () => { setEditingId(null); setForm({ ...emptyForm, tiposEntrada: [{ ...emptyTipo }] }); };
+  const reset = () => {
+    setEditingId(null);
+    setImageFile(null);
+    setForm({ ...emptyForm, tiposEntrada: [{ ...emptyTipo }] });
+  };
 
   const save = async (event: React.FormEvent) => {
     event.preventDefault();
     setSaving(true); setError(null);
     try {
-      if (editingId) await eventosApi.update(editingId, form);
-      else await eventosApi.create(form);
+      if (!editingId && !imageFile) {
+        setError('Debe subir una foto para crear el evento.');
+        return;
+      }
+      const imageUrl = imageFile ? await eventosApi.uploadImage(imageFile) : form.imagenUrl;
+      if (!imageUrl) {
+        setError('Debe subir una foto para crear el evento.');
+        return;
+      }
+      const payload = { ...form, imagenUrl: imageUrl };
+      if (editingId) await eventosApi.update(editingId, payload);
+      else await eventosApi.create(payload);
       setMessage(editingId ? 'Evento actualizado correctamente.' : 'Evento creado correctamente.');
       reset(); await load();
     } catch (saveError: any) {
@@ -108,7 +135,24 @@ export const AdminEventosPage: React.FC = () => {
               <TextField fullWidth type="datetime-local" label="Fin" slotProps={{ inputLabel: { shrink: true } }} value={form.fechaFin || ''} onChange={(e) => updateField('fechaFin', e.target.value)} />
               <TextField fullWidth label="Ubicación" value={form.ubicacion || ''} onChange={(e) => updateField('ubicacion', e.target.value)} />
             </Stack>
-            <TextField label="URL de imagen" value={form.imagenUrl || ''} onChange={(e) => updateField('imagenUrl', e.target.value)} />
+            <Button variant="outlined" component="label">
+              {imageFile ? `Foto seleccionada: ${imageFile.name}` : editingId && form.imagenUrl ? 'Reemplazar foto' : 'Subir foto del evento'}
+              <input
+                hidden
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                required={!editingId}
+                onChange={(e) => setImageFile(e.target.files?.[0] || null)}
+              />
+            </Button>
+            {(imageFile || form.imagenUrl) && (
+              <Box
+                component="img"
+                src={imagePreview || form.imagenUrl || undefined}
+                alt="Vista previa de la foto del evento"
+                sx={{ width: '100%', maxHeight: 240, objectFit: 'cover', borderRadius: 1 }}
+              />
+            )}
             <TextField select label="Estado" value={form.estado} onChange={(e) => updateField('estado', e.target.value as EstadoEvento)}>
               {(['BORRADOR', 'PUBLICADO', 'FINALIZADO', 'CANCELADO'] as EstadoEvento[]).map((estado) => <MenuItem key={estado} value={estado}>{estado}</MenuItem>)}
             </TextField>

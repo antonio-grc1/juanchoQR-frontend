@@ -80,6 +80,15 @@ export const eventosApi = {
     return res.data.evento;
   },
 
+  uploadImage: async (file: File): Promise<string> => {
+    const formData = new FormData();
+    formData.append('imagen', file);
+    const res = await api.post<{ imagenUrl: string }>('/eventos/imagen', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return res.data.imagenUrl;
+  },
+
   update: async (id: string, evento: Partial<EventoPayload>): Promise<Evento> => {
     const res = await api.put<{ evento: Evento }>(`/eventos/${id}`, evento);
     return res.data.evento;
