@@ -19,6 +19,19 @@ type ScanResult = {
   message: string;
 };
 
+const playFeedbackTone = (frequency: number) => {
+  const audioContext = new AudioContext();
+  const oscillator = audioContext.createOscillator();
+  const gain = audioContext.createGain();
+  oscillator.frequency.value = frequency;
+  gain.gain.value = 0.08;
+  oscillator.connect(gain);
+  gain.connect(audioContext.destination);
+  oscillator.start();
+  oscillator.stop(audioContext.currentTime + 0.12);
+  void oscillator.addEventListener('ended', () => audioContext.close());
+};
+
 export const ValidadorPage: React.FC = () => {
   const scannerRef = useRef<Html5Qrcode | null>(null);
   const scanInProgressRef = useRef(false);
@@ -40,6 +53,7 @@ export const ValidadorPage: React.FC = () => {
       const response = await ticketsApi.validate(normalizedToken);
       setValidatedCount((count) => count + 1);
       setResult({ severity: 'success', message: response.message });
+      playFeedbackTone(880);
     } catch (error: unknown) {
       const responseData = axios.isAxiosError(error) ? error.response?.data : undefined;
       const reason = responseData?.reason;
@@ -48,6 +62,7 @@ export const ValidadorPage: React.FC = () => {
         severity,
         message: responseData?.message || 'No se pudo validar el código QR.',
       });
+      playFeedbackTone(220);
     } finally {
       setManualToken('');
       setLoading(false);
