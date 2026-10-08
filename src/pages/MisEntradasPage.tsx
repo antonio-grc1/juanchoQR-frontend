@@ -10,6 +10,9 @@ import {
   Chip,
   Skeleton,
   Alert,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
 } from '@mui/material';
 import ConfirmationNumberIcon from '@mui/icons-material/ConfirmationNumber';
 import QrCode2Icon from '@mui/icons-material/QrCode2';
@@ -17,6 +20,7 @@ import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import PlaceIcon from '@mui/icons-material/Place';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import HighlightOffIcon from '@mui/icons-material/HighlightOff';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { QRCodeSVG } from 'qrcode.react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ticketsApi } from '../services/api';
@@ -34,6 +38,12 @@ export const MisEntradasPage: React.FC = () => {
 
   const [ticketSeleccionado, setTicketSeleccionado] = useState<Ticket | null>(null);
   const [mensajeAceptacion, setMensajeAceptacion] = useState<string | null>(null);
+  const [mostrarUtilizadas, setMostrarUtilizadas] = useState(false);
+
+  const entradasUtilizadas = tickets.filter((ticket) => ticket.estado === 'UTILIZADO');
+  const entradasVisibles = tickets.filter(
+    (ticket) => ticket.estado !== 'UTILIZADO' || mostrarUtilizadas
+  );
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -138,8 +148,27 @@ export const MisEntradasPage: React.FC = () => {
         </Box>
       )}
 
+      {!loading && !error && entradasUtilizadas.length > 0 && (
+        <Accordion
+          expanded={mostrarUtilizadas}
+          onChange={(_event, expanded) => setMostrarUtilizadas(expanded)}
+          sx={{ mb: 3, borderRadius: 2, '&:before': { display: 'none' } }}
+        >
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <Typography sx={{ fontWeight: 700 }}>
+              Entradas ya utilizadas ({entradasUtilizadas.length})
+            </Typography>
+          </AccordionSummary>
+          <AccordionDetails sx={{ pt: 0 }}>
+            <Typography variant="body2" color="text.secondary">
+              Estas entradas ya no están disponibles para volver a ingresar al evento.
+            </Typography>
+          </AccordionDetails>
+        </Accordion>
+      )}
+
       {/* Listado de Tickets */}
-      {!loading && !error && tickets.length > 0 && (
+      {!loading && !error && entradasVisibles.length > 0 && (
         <Box
           sx={{
             display: 'grid',
@@ -147,7 +176,7 @@ export const MisEntradasPage: React.FC = () => {
             gap: 3,
           }}
         >
-          {tickets.map((ticket) => {
+          {entradasVisibles.map((ticket) => {
             const evento = ticket.tipoEntrada.evento;
             const esActivo = ticket.estado === 'ACTIVO';
             const fechaFormateada = new Date(evento.fechaInicio).toLocaleDateString('es-AR', {
@@ -255,7 +284,7 @@ export const MisEntradasPage: React.FC = () => {
       )}
 
       {/* Estado Vacío */}
-      {!loading && !error && tickets.length === 0 && (
+      {!loading && !error && entradasVisibles.length === 0 && (
         <Box
           sx={{
             py: 8,
@@ -267,10 +296,14 @@ export const MisEntradasPage: React.FC = () => {
         >
           <ConfirmationNumberIcon sx={{ fontSize: 56, color: 'text.secondary', mb: 1.5 }} />
           <Typography variant="h6" color="text.secondary" sx={{ fontWeight: 700 }}>
-            Aún no tienes entradas compradas
+            {entradasUtilizadas.length > 0
+              ? 'No tienes entradas activas'
+              : 'Aún no tienes entradas compradas'}
           </Typography>
           <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5, mb: 3 }}>
-            Tus compras y tickets confirmados aparecerán en esta sección.
+            {entradasUtilizadas.length > 0
+              ? 'Puedes consultar las entradas ya utilizadas en el desplegable superior.'
+              : 'Tus compras y tickets confirmados aparecerán en esta sección.'}
           </Typography>
           <Button component={Link} to="/" variant="contained" sx={{ borderRadius: 2, fontWeight: 700, textTransform: 'none' }}>
             Explorar Eventos Disponibles
