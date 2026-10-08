@@ -243,3 +243,4 @@ export const MisEntradasPage: React.FC = () => {
     </Container>
   );
 };
+
