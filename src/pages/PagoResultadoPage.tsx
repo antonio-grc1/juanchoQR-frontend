@@ -127,3 +127,4 @@ export const PagoResultadoPage: React.FC<PagoResultadoPageProps> = ({ tipo }) =>
     </Container>
   );
 };
+

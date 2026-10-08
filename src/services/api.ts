@@ -1,5 +1,5 @@
 import axios from 'axios';
-import type { Evento, AuthResponse } from '../types';
+import type { Evento, AuthResponse, Ticket } from '../types';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
 
@@ -122,5 +122,13 @@ export const ordenesApi = {
     return res.data;
   },
 };
+
+export const ticketsApi = {
+  getMisTickets: async (): Promise<Ticket[]> => {
+    const res = await api.get<{ tickets: Ticket[] }>('/tickets/mis-tickets');
+    return res.data.tickets;
+  },
+};
+
 
 

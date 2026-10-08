@@ -8,6 +8,7 @@ import { LoginPage } from './pages/LoginPage';
 import { AdminLoginPage } from './pages/AdminLoginPage';
 import { PagoSimuladorPage } from './pages/PagoSimuladorPage';
 import { PagoResultadoPage } from './pages/PagoResultadoPage';
+import { MisEntradasPage } from './pages/MisEntradasPage';
 
 const theme = createTheme({
   palette: {
@@ -51,6 +52,9 @@ function App() {
                 <Route path="/pago/exitoso" element={<PagoResultadoPage tipo="exitoso" />} />
                 <Route path="/pago/fallido" element={<PagoResultadoPage tipo="fallido" />} />
                 <Route path="/pago/pendiente" element={<PagoResultadoPage tipo="pendiente" />} />
+
+                {/* Billetera de Entradas con QR */}
+                <Route path="/mis-entradas" element={<MisEntradasPage />} />
               </Routes>
             </Box>
           </Box>

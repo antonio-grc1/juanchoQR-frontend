@@ -37,3 +37,19 @@ export interface AuthResponse {
   usuario: Usuario;
 }
 
+export type EstadoTicket = 'ACTIVO' | 'UTILIZADO' | 'CANCELADO';
+
+export interface Ticket {
+  id: string;
+  ordenId: string;
+  tipoEntradaId: string;
+  tokenQr: string;
+  estado: EstadoTicket;
+  fechaUso?: string | null;
+  createdAt: string;
+  tipoEntrada: TipoEntrada & {
+    evento: Evento;
+  };
+}
+
+
