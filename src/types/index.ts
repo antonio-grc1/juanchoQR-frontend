@@ -36,3 +36,4 @@ export interface AuthResponse {
   refreshToken: string;
   usuario: Usuario;
 }
+

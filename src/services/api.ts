@@ -92,3 +92,35 @@ export const authApi = {
     }
   },
 };
+
+export interface CreateOrderResponse {
+  ordenId: string;
+  total: number;
+  preferenceId: string;
+  initPoint: string;
+}
+
+export const ordenesApi = {
+  create: async (tipoEntradaId: string, cantidad: number): Promise<CreateOrderResponse> => {
+    const res = await api.post<CreateOrderResponse>('/ordenes', {
+      tipoEntradaId,
+      cantidad,
+    });
+    return res.data;
+  },
+
+  getMisOrdenes: async (): Promise<any[]> => {
+    const res = await api.get<{ ordenes: any[] }>('/ordenes/mis-ordenes');
+    return res.data.ordenes;
+  },
+
+  simularPago: async (ordenId: string, accion?: 'aprobar' | 'rechazar'): Promise<any> => {
+    const res = await api.post('/ordenes/simular-pago', {
+      ordenId,
+      accion,
+    });
+    return res.data;
+  },
+};
+
+

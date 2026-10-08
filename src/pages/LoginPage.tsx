@@ -100,3 +100,4 @@ export const LoginPage: React.FC = () => {
     </Container>
   );
 };
+

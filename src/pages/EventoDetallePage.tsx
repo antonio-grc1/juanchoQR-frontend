@@ -16,6 +16,7 @@ import {
   Skeleton,
   Alert,
   Divider,
+  CircularProgress,
 } from '@mui/material';
 import type { SelectChangeEvent } from '@mui/material/Select';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
@@ -23,7 +24,7 @@ import PlaceIcon from '@mui/icons-material/Place';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import ShoppingCartCheckoutIcon from '@mui/icons-material/ShoppingCartCheckout';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { eventosApi } from '../services/api';
+import { eventosApi, ordenesApi } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import type { Evento, TipoEntrada } from '../types';
 
@@ -87,8 +88,10 @@ export const EventoDetallePage: React.FC = () => {
   };
 
   const total = tipoEntradaActual ? Number(tipoEntradaActual.precio) * cantidad : 0;
+  const [comprando, setComprando] = useState(false);
+  const [compraError, setCompraError] = useState<string | null>(null);
 
-  const handleIniciarCompra = () => {
+  const handleIniciarCompra = async () => {
     if (!tipoEntradaActual) return;
 
     if (!isAuthenticated) {
@@ -97,8 +100,21 @@ export const EventoDetallePage: React.FC = () => {
       return;
     }
 
-    // Al estar autenticado, derivar al checkout (Fase 3)
-    alert(`Listo para iniciar compra de ${cantidad}x ${tipoEntradaActual.nombre} por $${total.toLocaleString('es-AR')}.`);
+    try {
+      setComprando(true);
+      setCompraError(null);
+      const res = await ordenesApi.create(tipoEntradaActual.id, cantidad);
+      if (res.initPoint) {
+        window.location.href = res.initPoint;
+      }
+    } catch (err: any) {
+      console.error(err);
+      setCompraError(
+        err.response?.data?.error || 'No se pudo iniciar el pago. Intente nuevamente.'
+      );
+    } finally {
+      setComprando(false);
+    }
   };
 
   if (loading) {
@@ -276,6 +292,14 @@ export const EventoDetallePage: React.FC = () => {
                   )}
 
                   {/* Total y Botón de Pago */}
+                  {/* Alerta de Error en Compra */}
+                  {compraError && (
+                    <Alert severity="error" sx={{ borderRadius: 2 }}>
+                      {compraError}
+                    </Alert>
+                  )}
+
+                  {/* Total y Botón de Pago */}
                   {tipoEntradaActual && tipoEntradaActual.stockDisponible > 0 && (
                     <Box
                       sx={{
@@ -301,7 +325,8 @@ export const EventoDetallePage: React.FC = () => {
                       <Button
                         variant="contained"
                         size="large"
-                        startIcon={<ShoppingCartCheckoutIcon />}
+                        disabled={comprando}
+                        startIcon={comprando ? <CircularProgress size={20} color="inherit" /> : <ShoppingCartCheckoutIcon />}
                         onClick={handleIniciarCompra}
                         sx={{
                           borderRadius: 2,
@@ -311,7 +336,7 @@ export const EventoDetallePage: React.FC = () => {
                           textTransform: 'none',
                         }}
                       >
-                        Pagar
+                        {comprando ? 'Procesando...' : 'Pagar'}
                       </Button>
                     </Box>
                   )}
@@ -324,3 +349,4 @@ export const EventoDetallePage: React.FC = () => {
     </Container>
   );
 };
+

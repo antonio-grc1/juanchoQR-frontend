@@ -130,3 +130,4 @@ export const EventosPage: React.FC = () => {
     </Container>
   );
 };
+

@@ -136,3 +136,4 @@ export const Navbar: React.FC = () => {
     </AppBar>
   );
 };
+

@@ -6,6 +6,8 @@ import { EventosPage } from './pages/EventosPage';
 import { EventoDetallePage } from './pages/EventoDetallePage';
 import { LoginPage } from './pages/LoginPage';
 import { AdminLoginPage } from './pages/AdminLoginPage';
+import { PagoSimuladorPage } from './pages/PagoSimuladorPage';
+import { PagoResultadoPage } from './pages/PagoResultadoPage';
 
 const theme = createTheme({
   palette: {
@@ -43,6 +45,12 @@ function App() {
                 <Route path="/eventos/:id" element={<EventoDetallePage />} />
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/admin/login" element={<AdminLoginPage />} />
+
+                {/* Rutas de Pago y Mercado Pago */}
+                <Route path="/pago/simulador" element={<PagoSimuladorPage />} />
+                <Route path="/pago/exitoso" element={<PagoResultadoPage tipo="exitoso" />} />
+                <Route path="/pago/fallido" element={<PagoResultadoPage tipo="fallido" />} />
+                <Route path="/pago/pendiente" element={<PagoResultadoPage tipo="pendiente" />} />
               </Routes>
             </Box>
           </Box>
