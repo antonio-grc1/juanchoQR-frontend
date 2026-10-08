@@ -35,7 +35,8 @@ const theme = createTheme({
 });
 
 function ProtectedValidatorRoute() {
-  const { isAuthenticated, isValidador } = useAuth();
+  const { authReady, isAuthenticated, isValidador } = useAuth();
+  if (!authReady) return null;
   return isAuthenticated && isValidador ? <ValidadorPage /> : <Navigate to="/admin/login" replace />;
 }
 

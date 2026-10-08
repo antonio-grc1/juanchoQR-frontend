@@ -29,7 +29,7 @@ import { QRModal } from '../components/QRModal';
 import type { Ticket } from '../types';
 
 export const MisEntradasPage: React.FC = () => {
-  const { isAuthenticated } = useAuth();
+  const { authReady, isAuthenticated } = useAuth();
   const navigate = useNavigate();
 
   const [tickets, setTickets] = useState<Ticket[]>([]);
@@ -46,6 +46,8 @@ export const MisEntradasPage: React.FC = () => {
   );
 
   useEffect(() => {
+    if (!authReady) return;
+
     if (!isAuthenticated) {
       navigate('/login?redirect=/mis-entradas');
       return;
@@ -66,7 +68,7 @@ export const MisEntradasPage: React.FC = () => {
     };
 
     fetchTickets();
-  }, [isAuthenticated, navigate]);
+  }, [authReady, isAuthenticated, navigate]);
 
   useEffect(() => {
     if (!ticketSeleccionado || ticketSeleccionado.estado !== 'ACTIVO') return;

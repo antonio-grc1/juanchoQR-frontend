@@ -5,6 +5,7 @@ import { authApi } from '../services/api';
 interface AuthContextType {
   usuario: Usuario | null;
   token: string | null;
+  authReady: boolean;
   isAuthenticated: boolean;
   isAdmin: boolean;
   isValidador: boolean;
@@ -18,19 +19,22 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [usuario, setUsuario] = useState<Usuario | null>(null);
   const [token, setToken] = useState<string | null>(null);
+  const [authReady, setAuthReady] = useState(false);
 
   useEffect(() => {
     const storedToken = localStorage.getItem('token');
     const storedUser = localStorage.getItem('usuario');
 
-    if (storedToken && storedUser) {
-      try {
+    try {
+      if (storedToken && storedUser) {
         setToken(storedToken);
         setUsuario(JSON.parse(storedUser));
-      } catch {
-        localStorage.removeItem('token');
-        localStorage.removeItem('usuario');
       }
+    } catch {
+      localStorage.removeItem('token');
+      localStorage.removeItem('usuario');
+    } finally {
+      setAuthReady(true);
     }
   }, []);
 
@@ -67,6 +71,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       value={{
         usuario,
         token,
+        authReady,
         isAuthenticated,
         isAdmin,
         isValidador,
@@ -87,4 +92,3 @@ export const useAuth = (): AuthContextType => {
   }
   return context;
 };
-
