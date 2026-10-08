@@ -69,7 +69,7 @@ export const Navbar: React.FC = () => {
             {isValidador && (
               <Button
                 component={Link}
-                to="/escanear"
+                to="/validar-entradas"
                 color="secondary"
                 variant="outlined"
                 startIcon={<QrCodeScannerIcon />}
@@ -136,4 +136,3 @@ export const Navbar: React.FC = () => {
     </AppBar>
   );
 };
-

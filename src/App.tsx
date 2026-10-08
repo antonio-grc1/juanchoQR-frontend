@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { CssBaseline, Box, ThemeProvider, createTheme } from '@mui/material';
 import { AuthProvider } from './context/AuthContext';
 import { Navbar } from './components/Navbar';
@@ -9,6 +9,8 @@ import { AdminLoginPage } from './pages/AdminLoginPage';
 import { PagoSimuladorPage } from './pages/PagoSimuladorPage';
 import { PagoResultadoPage } from './pages/PagoResultadoPage';
 import { MisEntradasPage } from './pages/MisEntradasPage';
+import { ValidadorPage } from './pages/ValidadorPage';
+import { useAuth } from './context/AuthContext';
 
 const theme = createTheme({
   palette: {
@@ -31,6 +33,11 @@ const theme = createTheme({
     ].join(','),
   },
 });
+
+function ProtectedValidatorRoute() {
+  const { isAuthenticated, isValidador } = useAuth();
+  return isAuthenticated && isValidador ? <ValidadorPage /> : <Navigate to="/admin/login" replace />;
+}
 
 function App() {
   return (
@@ -55,6 +62,10 @@ function App() {
 
                 {/* Billetera de Entradas con QR */}
                 <Route path="/mis-entradas" element={<MisEntradasPage />} />
+                <Route
+                  path="/validar-entradas"
+                  element={<ProtectedValidatorRoute />}
+                />
               </Routes>
             </Box>
           </Box>

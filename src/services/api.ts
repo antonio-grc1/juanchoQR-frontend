@@ -128,7 +128,16 @@ export const ticketsApi = {
     const res = await api.get<{ tickets: Ticket[] }>('/tickets/mis-tickets');
     return res.data.tickets;
   },
-};
 
+  validate: async (tokenQr: string): Promise<{
+    valid: boolean;
+    message: string;
+    ticket?: Ticket;
+    fechaUso?: string;
+  }> => {
+    const res = await api.post('/tickets/validar', { tokenQr });
+    return res.data;
+  },
+};
 
 
