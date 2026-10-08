@@ -17,7 +17,7 @@ export interface TipoEntrada {
   maxPorCompra: number;
 }
 
-export type EstadoEvento = 'BORRADOR' | 'PUBLICADO' | 'FINALIZADO' | 'CANCELADO';
+export type EstadoEvento = 'BORRADOR' | 'DISPONIBLE' | 'FINALIZADO';
 
 export interface Evento {
   id: string;

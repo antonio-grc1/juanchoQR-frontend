@@ -119,10 +119,10 @@ export const AdminEventosPage: React.FC = () => {
     } finally { setSaving(false); }
   };
 
-  const cancel = async (evento: Evento) => {
-    if (!window.confirm(`¿Cancelar "${evento.titulo}"?`)) return;
-    try { await eventosApi.cancel(evento.id); setMessage('Evento cancelado correctamente.'); await load(); }
-    catch { setError('No se pudo cancelar el evento.'); }
+  const finalize = async (evento: Evento) => {
+    if (!window.confirm(`¿Finalizar "${evento.titulo}"?`)) return;
+    try { await eventosApi.cancel(evento.id); setMessage('Evento finalizado correctamente.'); await load(); }
+    catch { setError('No se pudo finalizar el evento.'); }
   };
 
   if (!authReady || loading) return <Container sx={{ py: 6, textAlign: 'center' }}><CircularProgress /></Container>;
@@ -176,7 +176,7 @@ export const AdminEventosPage: React.FC = () => {
               />
             )}
             <TextField select label="Estado" value={form.estado} onChange={(e) => updateField('estado', e.target.value as EstadoEvento)}>
-              {(['BORRADOR', 'PUBLICADO', 'FINALIZADO', 'CANCELADO'] as EstadoEvento[]).map((estado) => <MenuItem key={estado} value={estado}>{estado}</MenuItem>)}
+              {(['BORRADOR', 'DISPONIBLE', 'FINALIZADO'] as EstadoEvento[]).map((estado) => <MenuItem key={estado} value={estado}>{estado === 'DISPONIBLE' ? 'Disponible' : estado === 'FINALIZADO' ? 'Finalizado' : 'Borrador'}</MenuItem>)}
             </TextField>
             <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>Tipos de entrada</Typography>
             {form.tiposEntrada.map((tipo, index) => (
@@ -203,7 +203,7 @@ export const AdminEventosPage: React.FC = () => {
         {eventos.map((evento) => (
           <Card key={evento.id}><CardContent sx={{ display: 'flex', justifyContent: 'space-between', gap: 2, alignItems: 'center' }}>
             <Box><Typography variant="h6" sx={{ fontWeight: 700 }}>{evento.titulo}</Typography><Typography color="text.secondary">{new Date(evento.fechaInicio).toLocaleString('es-AR')} · {evento.tiposEntrada.length} tipo(s)</Typography></Box>
-            <Stack direction="row" sx={{ alignItems: 'center' }}><Chip label={evento.estado} color={evento.estado === 'PUBLICADO' ? 'success' : 'default'} /><IconButton onClick={() => edit(evento)}><EditIcon /></IconButton>{evento.estado !== 'CANCELADO' && <IconButton color="error" onClick={() => void cancel(evento)}><DeleteIcon /></IconButton>}</Stack>
+            <Stack direction="row" sx={{ alignItems: 'center' }}><Chip label={evento.estado === 'DISPONIBLE' ? 'Disponible' : evento.estado === 'FINALIZADO' ? 'Finalizado' : 'Borrador'} color={evento.estado === 'DISPONIBLE' ? 'success' : 'default'} /><IconButton onClick={() => edit(evento)}><EditIcon /></IconButton>{evento.estado !== 'FINALIZADO' && <IconButton color="error" onClick={() => void finalize(evento)}><DeleteIcon /></IconButton>}</Stack>
           </CardContent></Card>
         ))}
       </Stack>
